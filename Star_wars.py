@@ -34,7 +34,7 @@ goal_list = {
     "demon": 101,
     "open": 999999999999999999,
     "without_mission": 999999999999999999999,
-    "boss_mission": 51
+    "boss_mission": 101
 }
 
 win_width = 700
@@ -45,7 +45,7 @@ font3 = font.Font('pixel_font.ttf', 90)
 font1 = font.Font('pixel_font.ttf', 50)
 win_text = font1.render(' Мiсiя виконана!', True, (0, 255, 0))
 lose_text = font1.render('        Мiсiя проваленна!', True, (250, 0, 0))
-boss_win_text = font1.render(' Боса знищено!', True, (0, 255, 255))
+boss_win_text = font1.render('   Боса знищено!', True, (0, 255, 255))
 boss_lose_text = font1.render(' Ти програв босу!', True, (255, 0, 255))
 font2 = font.Font('pixel_font.ttf', 30)
 font_pause = font.Font('pixel_font.ttf', 40)
@@ -831,6 +831,8 @@ while game:
                         natusk_sound.play()
                         game_paused = False
                         current_menu = "main"
+                        mixer.music.load("nachalo.mp3")
+                        mixer.music.play()
                     elif button_exit_rect.collidepoint(mouse_pos):
                         natusk_sound.play()
                         game = False
