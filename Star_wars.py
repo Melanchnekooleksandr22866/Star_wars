@@ -8,7 +8,7 @@ mixer.music.load("nachalo.mp3")
 mixer.music.play()
 
 natusk_sound = mixer.Sound("natusk.mp3")
-boss_sound = mixer.Sound("boss.mp3")
+boss_sound = mixer.Sound("demon.mp3")
 
 music_list = {
     "easy": "easy.mp3",
@@ -17,7 +17,7 @@ music_list = {
     "demon": "demon.mp3",
     "open": "open.mp3",
     "without_mission": "without_mission.mp3",
-    "boss_mission": "boss.mp3"
+    "boss_mission": "demon.mp3"
 }
 
 fire_sound = mixer.Sound("laser.mp3")
@@ -91,6 +91,10 @@ class BossBullet(GameSprite):
             self.kill()
 
 class Player(GameSprite):
+    def __init__(self, player_image, player_x, player_y, size_x, size_y, player_speed):
+        super().__init__(player_image, player_x, player_y, size_x, size_y, player_speed)
+        self.last_shot_time = 0
+
     def update(self):
         keys_pressed = key.get_pressed()
         if keys_pressed[K_LEFT] and self.rect.x > 5:
@@ -103,8 +107,11 @@ class Player(GameSprite):
             self.rect.x += self.speed
 
     def fire(self):
-        bullet = Bullet("pyli.png", self.rect.centerx, self.rect.top, 15, 40, -25)
-        bullets.add(bullet)
+        current_time = time.time()
+        if current_time - self.last_shot_time >= 0.15:
+            bullet = Bullet("pyli.png", self.rect.centerx, self.rect.top, 15, 40, -25)
+            bullets.add(bullet)
+            self.last_shot_time = current_time
 
 class Enemy(GameSprite):
     def update(self):
@@ -842,9 +849,13 @@ while game:
                 player.fire()
                 bullets.draw(window) 
             elif game_started and e.key == K_ESCAPE:
-                game_paused = True
-                current_menu = "pause"
-                show_pause_menu()
+                if game_paused:
+                    game_paused = False
+                    current_menu = "game"
+                else:
+                    game_paused = True
+                    current_menu = "pause"
+                    show_pause_menu()
 
     if current_menu == "main":
         spawn_menu_rocket(button_missions_rect)
@@ -914,17 +925,25 @@ while game:
                 meteors.update()
                 bullets.update()
 
-                collides = sprite.groupcollide(monsters, bullets, True, True)
-                for c in collides:
+                collides = sprite.groupcollide(monsters, bullets, False, True)
+                for monster in collides:
                     score += 1
-                    monster = Enemy("monsters.png", randint(80, win_width - 80), -40, 80, 50, randint(1, 5))
-                    monsters.add(monster)
+                    monster.rect.x = randint(80, win_width - 80)
+                    monster.rect.y = -40
                 monsters.draw(window)
                 meteors.draw(window)
                 bullets.draw(window)
 
-                if sprite.spritecollide(player, monsters, True) or sprite.spritecollide(player, meteors, True):
+                collided_monsters = sprite.spritecollide(player, monsters, False)
+                collided_meteors = sprite.spritecollide(player, meteors, False)
+                if collided_monsters or collided_meteors:
                     lost += 2
+                    for monster in collided_monsters:
+                        monster.rect.x = randint(80, win_width - 80)
+                        monster.rect.y = -40
+                    for meteor in collided_meteors:
+                        meteor.rect.x = randint(80, win_width - 80)
+                        meteor.rect.y = -40
 
                 if score >= goal and goal != goal_list["open"] and goal != goal_list["without_mission"]:
                     end = End("raketa.png", win_width // 2 - 50, 50, 100, 100, 5, 1)
